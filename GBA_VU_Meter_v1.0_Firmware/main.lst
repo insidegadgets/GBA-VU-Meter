@@ -1,0 +1,728 @@
+   1               		.file	"main.c"
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               	.global	system_sleep
+  12               	system_sleep:
+  13               	.LFB6:
+  14               		.file 1 "setup.c"
+   1:setup.c       **** /*
+   2:setup.c       ****  GBA VU Meter
+   3:setup.c       ****  Version: 1.0
+   4:setup.c       ****  Author: Alex from insideGadgets (http://www.insidegadgets.com)
+   5:setup.c       ****  Created: 17/03/2020
+   6:setup.c       ****  Last Modified: 17/03/2020
+   7:setup.c       **** 
+   8:setup.c       ****  */
+   9:setup.c       ****  
+  10:setup.c       **** #ifndef cbi
+  11:setup.c       **** #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+  12:setup.c       **** #endif
+  13:setup.c       **** #ifndef sbi
+  14:setup.c       **** #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+  15:setup.c       **** #endif
+  16:setup.c       **** 
+  17:setup.c       **** #ifndef NULL
+  18:setup.c       **** #define NULL ((void *)0)
+  19:setup.c       **** #endif
+  20:setup.c       **** 
+  21:setup.c       **** #define LOW 0
+  22:setup.c       **** #define HIGH 1
+  23:setup.c       **** #define false 0
+  24:setup.c       **** #define true 1
+  25:setup.c       **** 
+  26:setup.c       **** // Watchdog timeouts to values
+  27:setup.c       **** #define T16MS 0
+  28:setup.c       **** #define T32MS 1
+  29:setup.c       **** #define T64MS 2
+  30:setup.c       **** #define T128MS 3
+  31:setup.c       **** #define T250MS 4
+  32:setup.c       **** #define T500MS 5
+  33:setup.c       **** #define T1S 6
+  34:setup.c       **** #define T2S 7
+  35:setup.c       **** #define T4S 8
+  36:setup.c       **** #define T8S 9
+  37:setup.c       **** 
+  38:setup.c       **** #define ADCPin 3
+  39:setup.c       **** #define LED1 PD0
+  40:setup.c       **** #define LED2 PD1
+  41:setup.c       **** #define LED3 PD2
+  42:setup.c       **** #define LED4 PD3
+  43:setup.c       **** #define LED5 PB7
+  44:setup.c       **** #define LED6 PD5
+  45:setup.c       **** #define LED7 PD6
+  46:setup.c       **** #define LED8 PD7
+  47:setup.c       **** #define LED9 PB0
+  48:setup.c       **** #define LED10 PB1
+  49:setup.c       **** 
+  50:setup.c       **** // ADC Refs
+  51:setup.c       **** #define REF_1_1V 0
+  52:setup.c       **** #define REF_AVCC 1
+  53:setup.c       **** 
+  54:setup.c       **** #define DELAY_TIME 50
+  55:setup.c       **** 
+  56:setup.c       **** // Sleep
+  57:setup.c       **** void system_sleep(void) {
+  15               		.loc 1 57 0
+  16               		.cfi_startproc
+  17               	/* prologue: function */
+  18               	/* frame size = 0 */
+  19               	/* stack size = 0 */
+  20               	.L__stack_usage = 0
+  58:setup.c       **** 	set_sleep_mode(SLEEP_MODE_PWR_DOWN); // Set sleep mode
+  21               		.loc 1 58 0
+  22 0000 83B7      		in r24,0x33
+  23 0002 897F      		andi r24,lo8(-7)
+  24 0004 8460      		ori r24,lo8(4)
+  25 0006 83BF      		out 0x33,r24
+  59:setup.c       **** 	sleep_mode(); // System sleeps here
+  26               		.loc 1 59 0
+  27 0008 83B7      		in r24,0x33
+  28 000a 8160      		ori r24,lo8(1)
+  29 000c 83BF      		out 0x33,r24
+  30               	/* #APP */
+  31               	 ;  59 "setup.c" 1
+  32 000e 8895      		sleep
+  33               		
+  34               	 ;  0 "" 2
+  35               	/* #NOAPP */
+  36 0010 83B7      		in r24,0x33
+  37 0012 8E7F      		andi r24,lo8(-2)
+  38 0014 83BF      		out 0x33,r24
+  39 0016 0895      		ret
+  40               		.cfi_endproc
+  41               	.LFE6:
+  43               	.global	setup_watchdog
+  45               	setup_watchdog:
+  46               	.LFB7:
+  60:setup.c       **** }
+  61:setup.c       **** 
+  62:setup.c       **** // Setup watchdog timed sequence
+  63:setup.c       **** void setup_watchdog(uint8_t wdDelay) {
+  47               		.loc 1 63 0
+  48               		.cfi_startproc
+  49               	.LVL0:
+  50               	/* prologue: function */
+  51               	/* frame size = 0 */
+  52               	/* stack size = 0 */
+  53               	.L__stack_usage = 0
+  54 0018 8A30      		cpi r24,lo8(10)
+  55 001a 00F0      		brlo .L3
+  56 001c 89E0      		ldi r24,lo8(9)
+  57               	.LVL1:
+  58               	.L3:
+  64:setup.c       **** 	if (wdDelay > 9) { 
+  65:setup.c       **** 		wdDelay = 9;
+  66:setup.c       **** 	}
+  67:setup.c       **** 	
+  68:setup.c       **** 	uint8_t bb = wdDelay & 7;
+  59               		.loc 1 68 0
+  60 001e 982F      		mov r25,r24
+  61 0020 9770      		andi r25,lo8(7)
+  62               	.LVL2:
+  69:setup.c       **** 	if (wdDelay > 7) { 
+  63               		.loc 1 69 0
+  64 0022 8830      		cpi r24,lo8(8)
+  65 0024 00F0      		brlo .L4
+  70:setup.c       **** 		bb |= (1<<5);
+  66               		.loc 1 70 0
+  67 0026 9062      		ori r25,lo8(32)
+  68               	.LVL3:
+  69               	.L4:
+  71:setup.c       **** 	}
+  72:setup.c       **** 	
+  73:setup.c       **** 	cli(); // Turn interrupts off
+  70               		.loc 1 73 0
+  71               	/* #APP */
+  72               	 ;  73 "setup.c" 1
+  73 0028 F894      		cli
+  74               	 ;  0 "" 2
+  74:setup.c       **** 	asm("WDR");
+  75               		.loc 1 74 0
+  76               	 ;  74 "setup.c" 1
+  77 002a A895      		WDR
+  78               	 ;  0 "" 2
+  75:setup.c       **** 	
+  76:setup.c       **** 	MCUSR &= ~(1<<WDRF);
+  79               		.loc 1 76 0
+  80               	/* #NOAPP */
+  81 002c 84B7      		in r24,0x34
+  82 002e 877F      		andi r24,lo8(-9)
+  83 0030 84BF      		out 0x34,r24
+  77:setup.c       **** 	// Start timed sequence
+  78:setup.c       **** 	WDTCSR |= (1<<WDCE) | (1<<WDE);
+  84               		.loc 1 78 0
+  85 0032 8091 6000 		lds r24,96
+  86 0036 8861      		ori r24,lo8(24)
+  87 0038 8093 6000 		sts 96,r24
+  79:setup.c       **** 	// Set new watchdog timeout value
+  80:setup.c       **** 	WDTCSR = bb | (1<<WDIE);
+  88               		.loc 1 80 0
+  89 003c 9064      		ori r25,lo8(64)
+  90               	.LVL4:
+  91 003e 9093 6000 		sts 96,r25
+  81:setup.c       **** 	
+  82:setup.c       **** 	sei(); // Turn interrupts back on
+  92               		.loc 1 82 0
+  93               	/* #APP */
+  94               	 ;  82 "setup.c" 1
+  95 0042 7894      		sei
+  96               	 ;  0 "" 2
+  97               	/* #NOAPP */
+  98 0044 0895      		ret
+  99               		.cfi_endproc
+ 100               	.LFE7:
+ 102               	.global	turn_off_watchdog
+ 104               	turn_off_watchdog:
+ 105               	.LFB8:
+  83:setup.c       **** }
+  84:setup.c       **** 
+  85:setup.c       **** // Turn off the Watchdog
+  86:setup.c       **** void turn_off_watchdog(void) {
+ 106               		.loc 1 86 0
+ 107               		.cfi_startproc
+ 108               	/* prologue: function */
+ 109               	/* frame size = 0 */
+ 110               	/* stack size = 0 */
+ 111               	.L__stack_usage = 0
+  87:setup.c       **** 	cli(); // Turn interrupts off
+ 112               		.loc 1 87 0
+ 113               	/* #APP */
+ 114               	 ;  87 "setup.c" 1
+ 115 0046 F894      		cli
+ 116               	 ;  0 "" 2
+  88:setup.c       **** 	asm("WDR");
+ 117               		.loc 1 88 0
+ 118               	 ;  88 "setup.c" 1
+ 119 0048 A895      		WDR
+ 120               	 ;  0 "" 2
+  89:setup.c       **** 	MCUSR &= ~(1<<WDRF);
+ 121               		.loc 1 89 0
+ 122               	/* #NOAPP */
+ 123 004a 84B7      		in r24,0x34
+ 124 004c 877F      		andi r24,lo8(-9)
+ 125 004e 84BF      		out 0x34,r24
+  90:setup.c       **** 	WDTCSR |= (1<<WDCE) | (1<<WDIE);
+ 126               		.loc 1 90 0
+ 127 0050 E0E6      		ldi r30,lo8(96)
+ 128 0052 F0E0      		ldi r31,0
+ 129 0054 8081      		ld r24,Z
+ 130 0056 8065      		ori r24,lo8(80)
+ 131 0058 8083      		st Z,r24
+  91:setup.c       **** 	WDTCSR = 0;
+ 132               		.loc 1 91 0
+ 133 005a 1082      		st Z,__zero_reg__
+  92:setup.c       **** 	sei(); // Turn interrupts back on
+ 134               		.loc 1 92 0
+ 135               	/* #APP */
+ 136               	 ;  92 "setup.c" 1
+ 137 005c 7894      		sei
+ 138               	 ;  0 "" 2
+ 139               	/* #NOAPP */
+ 140 005e 0895      		ret
+ 141               		.cfi_endproc
+ 142               	.LFE8:
+ 144               	.global	watchdog_sleep
+ 146               	watchdog_sleep:
+ 147               	.LFB9:
+  93:setup.c       **** }
+  94:setup.c       **** 
+  95:setup.c       **** // Watchdog sleep function - setup, sleep and turn off
+  96:setup.c       **** void watchdog_sleep(uint8_t timeout) { 
+ 148               		.loc 1 96 0
+ 149               		.cfi_startproc
+ 150               	.LVL5:
+ 151               	/* prologue: function */
+ 152               	/* frame size = 0 */
+ 153               	/* stack size = 0 */
+ 154               	.L__stack_usage = 0
+  97:setup.c       **** 	setup_watchdog(timeout);
+ 155               		.loc 1 97 0
+ 156 0060 00D0      		rcall setup_watchdog
+ 157               	.LVL6:
+  98:setup.c       **** 	system_sleep();
+ 158               		.loc 1 98 0
+ 159 0062 00D0      		rcall system_sleep
+ 160               	.LVL7:
+  99:setup.c       **** 	turn_off_watchdog();
+ 161               		.loc 1 99 0
+ 162 0064 00C0      		rjmp turn_off_watchdog
+ 163               	.LVL8:
+ 164               		.cfi_endproc
+ 165               	.LFE9:
+ 167               	.global	adc_read
+ 169               	adc_read:
+ 170               	.LFB10:
+ 100:setup.c       **** }
+ 101:setup.c       **** 
+ 102:setup.c       **** // Read the ADC
+ 103:setup.c       **** int adc_read(uint8_t pin, uint8_t reference) {
+ 171               		.loc 1 103 0
+ 172               		.cfi_startproc
+ 173               	.LVL9:
+ 174               	/* prologue: function */
+ 175               	/* frame size = 0 */
+ 176               	/* stack size = 0 */
+ 177               	.L__stack_usage = 0
+ 178 0066 8F70      		andi r24,lo8(15)
+ 179               	.LVL10:
+ 104:setup.c       **** 	uint8_t low, high;
+ 105:setup.c       **** 	
+ 106:setup.c       **** 	// Set the analog reference (high two bits of ADMUX) and select the channel (low 4 bits)
+ 107:setup.c       **** 	if (reference == REF_1_1V) {
+ 180               		.loc 1 107 0
+ 181 0068 6111      		cpse r22,__zero_reg__
+ 108:setup.c       **** 		ADMUX = (pin & 0x0F); // 1.1V reference
+ 109:setup.c       **** 	}
+ 110:setup.c       **** 	else {
+ 111:setup.c       **** 		ADMUX = (1<<REFS0) | (pin & 0x0F); // AVCC Ref
+ 182               		.loc 1 111 0
+ 183 006a 8064      		ori r24,lo8(64)
+ 184               	.L11:
+ 185 006c 8093 7C00 		sts 124,r24
+ 112:setup.c       **** 	}
+ 113:setup.c       **** 	
+ 114:setup.c       **** 	set_sleep_mode(SLEEP_MODE_ADC); // Set sleep mode ADC
+ 186               		.loc 1 114 0
+ 187 0070 83B7      		in r24,0x33
+ 188 0072 897F      		andi r24,lo8(-7)
+ 189 0074 8260      		ori r24,lo8(2)
+ 190 0076 83BF      		out 0x33,r24
+ 115:setup.c       **** 	sleep_mode(); // System sleeps here
+ 191               		.loc 1 115 0
+ 192 0078 83B7      		in r24,0x33
+ 193 007a 8160      		ori r24,lo8(1)
+ 194 007c 83BF      		out 0x33,r24
+ 195               	/* #APP */
+ 196               	 ;  115 "setup.c" 1
+ 197 007e 8895      		sleep
+ 198               		
+ 199               	 ;  0 "" 2
+ 200               	/* #NOAPP */
+ 201 0080 83B7      		in r24,0x33
+ 202 0082 8E7F      		andi r24,lo8(-2)
+ 203 0084 83BF      		out 0x33,r24
+ 116:setup.c       **** 	
+ 117:setup.c       **** 	// Read ADCL first
+ 118:setup.c       **** 	low = ADCL;
+ 204               		.loc 1 118 0
+ 205 0086 8091 7800 		lds r24,120
+ 206               	.LVL11:
+ 119:setup.c       **** 	high = ADCH;
+ 207               		.loc 1 119 0
+ 208 008a 2091 7900 		lds r18,121
+ 209               	.LVL12:
+ 120:setup.c       **** 	
+ 121:setup.c       **** 	// combine the two bytes
+ 122:setup.c       **** 	return (high << 8) | low;
+ 210               		.loc 1 122 0
+ 211 008e 90E0      		ldi r25,0
+ 123:setup.c       **** }
+ 212               		.loc 1 123 0
+ 213 0090 922B      		or r25,r18
+ 214 0092 0895      		ret
+ 215               		.cfi_endproc
+ 216               	.LFE10:
+ 218               	.global	setup
+ 220               	setup:
+ 221               	.LFB11:
+ 124:setup.c       **** // Setup
+ 125:setup.c       **** void setup(void) {
+ 222               		.loc 1 125 0
+ 223               		.cfi_startproc
+ 224               	/* prologue: function */
+ 225               	/* frame size = 0 */
+ 226               	/* stack size = 0 */
+ 227               	.L__stack_usage = 0
+ 126:setup.c       **** 	// Turn on pull ups
+ 127:setup.c       **** 	PORTB |= (1<<PB2) | (1<<PB3) | (1<<PB4) | (1<<PB5) | (1<<PB6); 
+ 228               		.loc 1 127 0
+ 229 0094 85B1      		in r24,0x5
+ 230 0096 8C67      		ori r24,lo8(124)
+ 231 0098 85B9      		out 0x5,r24
+ 128:setup.c       **** 	PORTC |= (1<<PC0) | (1<<PC1) | (1<<PC2) | (1<<PC4) | (1<<PC5) | (1<<PC6) | (1<<PC7); 
+ 232               		.loc 1 128 0
+ 233 009a 88B1      		in r24,0x8
+ 234 009c 876F      		ori r24,lo8(-9)
+ 235 009e 88B9      		out 0x8,r24
+ 129:setup.c       **** 	
+ 130:setup.c       **** 	// Setup outputs
+ 131:setup.c       **** 	DDRD |= (1<<LED1) | (1<<LED2) | (1<<LED3) | (1<<LED4) | (1<<LED6) | (1<<LED7) | (1<<LED8);
+ 236               		.loc 1 131 0
+ 237 00a0 8AB1      		in r24,0xa
+ 238 00a2 8F6E      		ori r24,lo8(-17)
+ 239 00a4 8AB9      		out 0xa,r24
+ 132:setup.c       **** 	DDRB |= (1<<LED5)  | (1<<LED9) | (1<<LED10);
+ 240               		.loc 1 132 0
+ 241 00a6 84B1      		in r24,0x4
+ 242 00a8 8368      		ori r24,lo8(-125)
+ 243 00aa 84B9      		out 0x4,r24
+ 133:setup.c       **** 	
+ 134:setup.c       **** 	// Set ADC prescale factor to 8
+ 135:setup.c       **** 	// 1 MHz / 8 = 125 KHz, inside the desired 50-200 KHz range.
+ 136:setup.c       **** 	sbi(ADCSRA, ADPS1);
+ 244               		.loc 1 136 0
+ 245 00ac EAE7      		ldi r30,lo8(122)
+ 246 00ae F0E0      		ldi r31,0
+ 247 00b0 8081      		ld r24,Z
+ 248 00b2 8260      		ori r24,lo8(2)
+ 249 00b4 8083      		st Z,r24
+ 137:setup.c       **** 	sbi(ADCSRA, ADPS0);
+ 250               		.loc 1 137 0
+ 251 00b6 8081      		ld r24,Z
+ 252 00b8 8160      		ori r24,lo8(1)
+ 253 00ba 8083      		st Z,r24
+ 138:setup.c       **** 	
+ 139:setup.c       **** 	// Enable ADC/interrupt
+ 140:setup.c       **** 	sbi(ADCSRA, ADEN);
+ 254               		.loc 1 140 0
+ 255 00bc 8081      		ld r24,Z
+ 256 00be 8068      		ori r24,lo8(-128)
+ 257 00c0 8083      		st Z,r24
+ 141:setup.c       **** 	sbi(ADCSRA, ADIE);
+ 258               		.loc 1 141 0
+ 259 00c2 8081      		ld r24,Z
+ 260 00c4 8860      		ori r24,lo8(8)
+ 261 00c6 8083      		st Z,r24
+ 142:setup.c       **** 	
+ 143:setup.c       **** 	// Blink LEDs
+ 144:setup.c       **** 	//PORTD |= (1<<LED1) | (1<<LED2) | (1<<LED3) | (1<<LED4) | (1<<LED6) | (1<<LED7) | (1<<LED8);
+ 145:setup.c       **** 	//PORTB |= (1<<LED5) | (1<<LED9) | (1<<LED10);
+ 146:setup.c       **** 	//_delay_ms(200);
+ 147:setup.c       **** 	//PORTD &= ~((1<<LED1) | (1<<LED2) | (1<<LED3) | (1<<LED4) | (1<<LED6) | (1<<LED7) | (1<<LED8));
+ 148:setup.c       **** 	//PORTB &= ~((1<<LED5) | (1<<LED9) | (1<<LED10));
+ 149:setup.c       **** 	
+ 150:setup.c       **** 	sei(); // Turn on interrupts
+ 262               		.loc 1 150 0
+ 263               	/* #APP */
+ 264               	 ;  150 "setup.c" 1
+ 265 00c8 7894      		sei
+ 266               	 ;  0 "" 2
+ 267               	/* #NOAPP */
+ 268 00ca 0895      		ret
+ 269               		.cfi_endproc
+ 270               	.LFE11:
+ 272               		.section	.text.startup,"ax",@progbits
+ 273               	.global	main
+ 275               	main:
+ 276               	.LFB12:
+ 277               		.file 2 "main.c"
+   1:main.c        **** /*
+   2:main.c        ****  GBA VU Meter
+   3:main.c        ****  Version: 1.0
+   4:main.c        ****  Author: Alex from insideGadgets (http://www.insidegadgets.com)
+   5:main.c        ****  Created: 17/03/2020
+   6:main.c        ****  Last Modified: 17/03/2020
+   7:main.c        ****  
+   8:main.c        ****  Connect to the GBA SP pin with 0.1uF and 10K resistor to PC3. Values can be adjusted to suit.
+   9:main.c        ****  
+  10:main.c        **** */
+  11:main.c        **** 
+  12:main.c        **** #define F_CPU 1000000 // 1 MHz
+  13:main.c        **** 
+  14:main.c        **** #include <avr/io.h>
+  15:main.c        **** #include <avr/eeprom.h>
+  16:main.c        **** #include <avr/interrupt.h>
+  17:main.c        **** #include <util/delay.h>
+  18:main.c        **** #include <avr/sleep.h>
+  19:main.c        **** #include "setup.c"
+  20:main.c        **** 
+  21:main.c        **** int main (void) {
+ 278               		.loc 2 21 0
+ 279               		.cfi_startproc
+ 280               	/* prologue: function */
+ 281               	/* frame size = 0 */
+ 282               	/* stack size = 0 */
+ 283               	.L__stack_usage = 0
+  22:main.c        **** 	setup();
+ 284               		.loc 2 22 0
+ 285 0000 00D0      		rcall setup
+ 286               	.LVL13:
+ 287               	.L14:
+ 288               	.LBB2:
+  23:main.c        **** 	
+  24:main.c        **** 	while(1) {
+  25:main.c        **** 		
+  26:main.c        **** 		uint16_t vuResult = adc_read(ADCPin, REF_1_1V);
+ 289               		.loc 2 26 0
+ 290 0002 60E0      		ldi r22,0
+ 291 0004 83E0      		ldi r24,lo8(3)
+ 292 0006 00D0      		rcall adc_read
+ 293               	.LVL14:
+  27:main.c        **** 		//_delay_ms(1);
+  28:main.c        **** 		
+  29:main.c        **** 		uint16_t startCompare = 560; // Play around with this to suit your needs
+  30:main.c        **** 		
+  31:main.c        **** 		
+  32:main.c        **** 		// Red
+  33:main.c        **** 		if (vuResult >= startCompare) {
+ 294               		.loc 2 33 0
+ 295 0008 8033      		cpi r24,48
+ 296 000a 22E0      		ldi r18,2
+ 297 000c 9207      		cpc r25,r18
+ 298 000e 00F0      		brlo .L15
+  34:main.c        **** 			PORTD |= (1<<LED1);
+ 299               		.loc 2 34 0
+ 300 0010 589A      		sbi 0xb,0
+  35:main.c        **** 		}
+  36:main.c        **** 		else {
+  37:main.c        **** 			PORTD &= ~(1<<LED1);
+  38:main.c        **** 		}
+  39:main.c        **** 		if (vuResult >= startCompare + 20) {
+ 301               		.loc 2 39 0
+ 302 0012 8434      		cpi r24,68
+ 303 0014 22E0      		ldi r18,2
+ 304 0016 9207      		cpc r25,r18
+ 305 0018 00F4      		brsh .L16
+ 306 001a 00C0      		rjmp .L17
+ 307               	.L15:
+  37:main.c        **** 		}
+ 308               		.loc 2 37 0
+ 309 001c 5898      		cbi 0xb,0
+ 310 001e 00C0      		rjmp .L17
+ 311               	.L16:
+  40:main.c        **** 			PORTD |= (1<<LED2);
+ 312               		.loc 2 40 0
+ 313 0020 599A      		sbi 0xb,1
+  41:main.c        **** 		}
+  42:main.c        **** 		else {
+  43:main.c        **** 			PORTD &= ~(1<<LED2);
+  44:main.c        **** 		}
+  45:main.c        **** 		if (vuResult >= startCompare + 30) {
+ 314               		.loc 2 45 0
+ 315 0022 8E34      		cpi r24,78
+ 316 0024 22E0      		ldi r18,2
+ 317 0026 9207      		cpc r25,r18
+ 318 0028 00F4      		brsh .L18
+ 319 002a 00C0      		rjmp .L19
+ 320               	.L17:
+  43:main.c        **** 		}
+ 321               		.loc 2 43 0
+ 322 002c 5998      		cbi 0xb,1
+ 323 002e 00C0      		rjmp .L19
+ 324               	.L18:
+  46:main.c        **** 			PORTD |= (1<<LED3);
+ 325               		.loc 2 46 0
+ 326 0030 5A9A      		sbi 0xb,2
+  47:main.c        **** 		}
+  48:main.c        **** 		else {
+  49:main.c        **** 			PORTD &= ~(1<<LED3);
+  50:main.c        **** 		}
+  51:main.c        **** 		
+  52:main.c        **** 		// Blue
+  53:main.c        **** 		if (vuResult >= startCompare + 40) {
+ 327               		.loc 2 53 0
+ 328 0032 8835      		cpi r24,88
+ 329 0034 22E0      		ldi r18,2
+ 330 0036 9207      		cpc r25,r18
+ 331 0038 00F4      		brsh .L20
+ 332 003a 00C0      		rjmp .L21
+ 333               	.L19:
+  49:main.c        **** 		}
+ 334               		.loc 2 49 0
+ 335 003c 5A98      		cbi 0xb,2
+ 336 003e 00C0      		rjmp .L21
+ 337               	.L20:
+  54:main.c        **** 			PORTD |= (1<<LED4);
+ 338               		.loc 2 54 0
+ 339 0040 5B9A      		sbi 0xb,3
+  55:main.c        **** 		}
+  56:main.c        **** 		else {
+  57:main.c        **** 			PORTD &= ~(1<<LED4);
+  58:main.c        **** 		}
+  59:main.c        **** 		if (vuResult >= startCompare + 50) {
+ 340               		.loc 2 59 0
+ 341 0042 8236      		cpi r24,98
+ 342 0044 22E0      		ldi r18,2
+ 343 0046 9207      		cpc r25,r18
+ 344 0048 00F4      		brsh .L22
+ 345 004a 00C0      		rjmp .L23
+ 346               	.L21:
+  57:main.c        **** 		}
+ 347               		.loc 2 57 0
+ 348 004c 5B98      		cbi 0xb,3
+ 349 004e 00C0      		rjmp .L23
+ 350               	.L22:
+  60:main.c        **** 			PORTB |= (1<<LED5);
+ 351               		.loc 2 60 0
+ 352 0050 2F9A      		sbi 0x5,7
+  61:main.c        **** 		}
+  62:main.c        **** 		else {
+  63:main.c        **** 			PORTB &= ~(1<<LED5);
+  64:main.c        **** 		}
+  65:main.c        **** 		if (vuResult >= startCompare + 60) {
+ 353               		.loc 2 65 0
+ 354 0052 8C36      		cpi r24,108
+ 355 0054 22E0      		ldi r18,2
+ 356 0056 9207      		cpc r25,r18
+ 357 0058 00F4      		brsh .L24
+ 358 005a 00C0      		rjmp .L25
+ 359               	.L23:
+  63:main.c        **** 		}
+ 360               		.loc 2 63 0
+ 361 005c 2F98      		cbi 0x5,7
+ 362 005e 00C0      		rjmp .L25
+ 363               	.L24:
+  66:main.c        **** 			PORTD |= (1<<LED6);
+ 364               		.loc 2 66 0
+ 365 0060 5D9A      		sbi 0xb,5
+  67:main.c        **** 		}
+  68:main.c        **** 		else {
+  69:main.c        **** 			PORTD &= ~(1<<LED6);
+  70:main.c        **** 		}
+  71:main.c        **** 		if (vuResult >= startCompare + 70) {
+ 366               		.loc 2 71 0
+ 367 0062 8637      		cpi r24,118
+ 368 0064 22E0      		ldi r18,2
+ 369 0066 9207      		cpc r25,r18
+ 370 0068 00F4      		brsh .L26
+ 371 006a 00C0      		rjmp .L27
+ 372               	.L25:
+  69:main.c        **** 		}
+ 373               		.loc 2 69 0
+ 374 006c 5D98      		cbi 0xb,5
+ 375 006e 00C0      		rjmp .L27
+ 376               	.L26:
+  72:main.c        **** 			PORTD |= (1<<LED7);
+ 377               		.loc 2 72 0
+ 378 0070 5E9A      		sbi 0xb,6
+  73:main.c        **** 		}
+  74:main.c        **** 		else {
+  75:main.c        **** 			PORTD &= ~(1<<LED7);
+  76:main.c        **** 		}
+  77:main.c        **** 		
+  78:main.c        **** 		// Green
+  79:main.c        **** 		if (vuResult >= startCompare + 80) {
+ 379               		.loc 2 79 0
+ 380 0072 8038      		cpi r24,-128
+ 381 0074 22E0      		ldi r18,2
+ 382 0076 9207      		cpc r25,r18
+ 383 0078 00F4      		brsh .L28
+ 384 007a 00C0      		rjmp .L29
+ 385               	.L27:
+  75:main.c        **** 		}
+ 386               		.loc 2 75 0
+ 387 007c 5E98      		cbi 0xb,6
+ 388 007e 00C0      		rjmp .L29
+ 389               	.L28:
+  80:main.c        **** 			PORTD |= (1<<LED8);
+ 390               		.loc 2 80 0
+ 391 0080 5F9A      		sbi 0xb,7
+  81:main.c        **** 		}
+  82:main.c        **** 		else {
+  83:main.c        **** 			PORTD &= ~(1<<LED8);
+  84:main.c        **** 		}
+  85:main.c        **** 		if (vuResult >= startCompare + 90) {
+ 392               		.loc 2 85 0
+ 393 0082 8A38      		cpi r24,-118
+ 394 0084 22E0      		ldi r18,2
+ 395 0086 9207      		cpc r25,r18
+ 396 0088 00F4      		brsh .L30
+ 397 008a 00C0      		rjmp .L31
+ 398               	.L29:
+  83:main.c        **** 		}
+ 399               		.loc 2 83 0
+ 400 008c 5F98      		cbi 0xb,7
+ 401 008e 00C0      		rjmp .L31
+ 402               	.L30:
+  86:main.c        **** 			PORTB |= (1<<LED9);
+ 403               		.loc 2 86 0
+ 404 0090 289A      		sbi 0x5,0
+  87:main.c        **** 		}
+  88:main.c        **** 		else {
+  89:main.c        **** 			PORTB &= ~(1<<LED9);
+  90:main.c        **** 		}
+  91:main.c        **** 		if (vuResult >= startCompare + 100) {
+ 405               		.loc 2 91 0
+ 406 0092 8439      		cpi r24,-108
+ 407 0094 9240      		sbci r25,2
+ 408 0096 00F0      		brlo .L33
+  92:main.c        **** 			PORTB |= (1<<LED10);
+ 409               		.loc 2 92 0
+ 410 0098 299A      		sbi 0x5,1
+ 411 009a 00C0      		rjmp .L14
+ 412               	.L31:
+  89:main.c        **** 		}
+ 413               		.loc 2 89 0
+ 414 009c 2898      		cbi 0x5,0
+ 415               	.L33:
+  93:main.c        **** 		}
+  94:main.c        **** 		else {
+  95:main.c        **** 			PORTB &= ~(1<<LED10);
+ 416               		.loc 2 95 0
+ 417 009e 2998      		cbi 0x5,1
+ 418 00a0 00C0      		rjmp .L14
+ 419               	.LBE2:
+ 420               		.cfi_endproc
+ 421               	.LFE12:
+ 423               		.text
+ 424               	.global	__vector_16
+ 426               	__vector_16:
+ 427               	.LFB13:
+  96:main.c        **** 		}
+  97:main.c        **** 		
+  98:main.c        **** 	}
+  99:main.c        **** 	
+ 100:main.c        **** 	return 0;
+ 101:main.c        **** }
+ 102:main.c        **** 
+ 103:main.c        **** EMPTY_INTERRUPT(ADC_vect);
+ 428               		.loc 2 103 0
+ 429               		.cfi_startproc
+ 430               	/* prologue: naked */
+ 431               	/* frame size = 0 */
+ 432               	/* stack size = 0 */
+ 433               	.L__stack_usage = 0
+ 434               		.loc 2 103 0
+ 435               	/* #APP */
+ 436               	 ;  103 "main.c" 1
+ 437 00cc 1895      		reti
+ 438               	 ;  0 "" 2
+ 439               	/* epilogue start */
+ 440               	/* #NOAPP */
+ 441               		.cfi_endproc
+ 442               	.LFE13:
+ 444               	.global	__vector_7
+ 446               	__vector_7:
+ 447               	.LFB14:
+ 104:main.c        **** EMPTY_INTERRUPT(WDT_vect);
+ 448               		.loc 2 104 0
+ 449               		.cfi_startproc
+ 450               	/* prologue: naked */
+ 451               	/* frame size = 0 */
+ 452               	/* stack size = 0 */
+ 453               	.L__stack_usage = 0
+ 454               		.loc 2 104 0
+ 455               	/* #APP */
+ 456               	 ;  104 "main.c" 1
+ 457 00ce 1895      		reti
+ 458               	 ;  0 "" 2
+ 459               	/* epilogue start */
+ 460               	/* #NOAPP */
+ 461               		.cfi_endproc
+ 462               	.LFE14:
+ 464               	.Letext0:
+ 465               		.file 3 "c:\\winavr-20100110\\avr\\include\\stdint.h"
+DEFINED SYMBOLS
+                            *ABS*:00000000 main.c
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:2      *ABS*:0000003e __SP_H__
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:3      *ABS*:0000003d __SP_L__
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:4      *ABS*:0000003f __SREG__
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:5      *ABS*:00000000 __tmp_reg__
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:6      *ABS*:00000001 __zero_reg__
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:12     .text:00000000 system_sleep
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:45     .text:00000018 setup_watchdog
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:104    .text:00000046 turn_off_watchdog
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:146    .text:00000060 watchdog_sleep
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:169    .text:00000066 adc_read
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:220    .text:00000094 setup
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:275    .text.startup:00000000 main
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:426    .text:000000cc __vector_16
+C:\Users\Alex\AppData\Local\Temp\cc6Jdj7V.s:446    .text:000000ce __vector_7
+
+NO UNDEFINED SYMBOLS

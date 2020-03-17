@@ -1,0 +1,524 @@
+
+main.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .data         00000000  00800100  000001b0  00000224  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  1 .text         000001b0  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .comment      00000030  00000000  00000000  00000224  2**0
+                  CONTENTS, READONLY
+  3 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000254  2**2
+                  CONTENTS, READONLY
+  4 .debug_aranges 00000028  00000000  00000000  00000290  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_info   000007a5  00000000  00000000  000002b8  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_abbrev 00000682  00000000  00000000  00000a5d  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_line   0000026c  00000000  00000000  000010df  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_frame  000000a4  00000000  00000000  0000134c  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_str    0000036d  00000000  00000000  000013f0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_loc    00000068  00000000  00000000  0000175d  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_ranges 00000018  00000000  00000000  000017c5  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	13 c0       	rjmp	.+38     	; 0x28 <__ctors_end>
+   2:	1a c0       	rjmp	.+52     	; 0x38 <__bad_interrupt>
+   4:	19 c0       	rjmp	.+50     	; 0x38 <__bad_interrupt>
+   6:	18 c0       	rjmp	.+48     	; 0x38 <__bad_interrupt>
+   8:	17 c0       	rjmp	.+46     	; 0x38 <__bad_interrupt>
+   a:	16 c0       	rjmp	.+44     	; 0x38 <__bad_interrupt>
+   c:	15 c0       	rjmp	.+42     	; 0x38 <__bad_interrupt>
+   e:	7c c0       	rjmp	.+248    	; 0x108 <__vector_7>
+  10:	13 c0       	rjmp	.+38     	; 0x38 <__bad_interrupt>
+  12:	12 c0       	rjmp	.+36     	; 0x38 <__bad_interrupt>
+  14:	11 c0       	rjmp	.+34     	; 0x38 <__bad_interrupt>
+  16:	10 c0       	rjmp	.+32     	; 0x38 <__bad_interrupt>
+  18:	0f c0       	rjmp	.+30     	; 0x38 <__bad_interrupt>
+  1a:	0e c0       	rjmp	.+28     	; 0x38 <__bad_interrupt>
+  1c:	0d c0       	rjmp	.+26     	; 0x38 <__bad_interrupt>
+  1e:	0c c0       	rjmp	.+24     	; 0x38 <__bad_interrupt>
+  20:	72 c0       	rjmp	.+228    	; 0x106 <__vector_16>
+  22:	0a c0       	rjmp	.+20     	; 0x38 <__bad_interrupt>
+  24:	09 c0       	rjmp	.+18     	; 0x38 <__bad_interrupt>
+  26:	08 c0       	rjmp	.+16     	; 0x38 <__bad_interrupt>
+
+00000028 <__ctors_end>:
+  28:	11 24       	eor	r1, r1
+  2a:	1f be       	out	0x3f, r1	; 63
+  2c:	cf ef       	ldi	r28, 0xFF	; 255
+  2e:	d1 e0       	ldi	r29, 0x01	; 1
+  30:	de bf       	out	0x3e, r29	; 62
+  32:	cd bf       	out	0x3d, r28	; 61
+  34:	6a d0       	rcall	.+212    	; 0x10a <main>
+  36:	ba c0       	rjmp	.+372    	; 0x1ac <_exit>
+
+00000038 <__bad_interrupt>:
+  38:	e3 cf       	rjmp	.-58     	; 0x0 <__vectors>
+
+0000003a <system_sleep>:
+
+#define DELAY_TIME 50
+
+// Sleep
+void system_sleep(void) {
+	set_sleep_mode(SLEEP_MODE_PWR_DOWN); // Set sleep mode
+  3a:	83 b7       	in	r24, 0x33	; 51
+  3c:	89 7f       	andi	r24, 0xF9	; 249
+  3e:	84 60       	ori	r24, 0x04	; 4
+  40:	83 bf       	out	0x33, r24	; 51
+	sleep_mode(); // System sleeps here
+  42:	83 b7       	in	r24, 0x33	; 51
+  44:	81 60       	ori	r24, 0x01	; 1
+  46:	83 bf       	out	0x33, r24	; 51
+  48:	88 95       	sleep
+  4a:	83 b7       	in	r24, 0x33	; 51
+  4c:	8e 7f       	andi	r24, 0xFE	; 254
+  4e:	83 bf       	out	0x33, r24	; 51
+  50:	08 95       	ret
+
+00000052 <setup_watchdog>:
+}
+
+// Setup watchdog timed sequence
+void setup_watchdog(uint8_t wdDelay) {
+  52:	8a 30       	cpi	r24, 0x0A	; 10
+  54:	08 f0       	brcs	.+2      	; 0x58 <setup_watchdog+0x6>
+  56:	89 e0       	ldi	r24, 0x09	; 9
+	if (wdDelay > 9) { 
+		wdDelay = 9;
+	}
+	
+	uint8_t bb = wdDelay & 7;
+  58:	98 2f       	mov	r25, r24
+  5a:	97 70       	andi	r25, 0x07	; 7
+	if (wdDelay > 7) { 
+  5c:	88 30       	cpi	r24, 0x08	; 8
+  5e:	08 f0       	brcs	.+2      	; 0x62 <setup_watchdog+0x10>
+		bb |= (1<<5);
+  60:	90 62       	ori	r25, 0x20	; 32
+	}
+	
+	cli(); // Turn interrupts off
+  62:	f8 94       	cli
+	asm("WDR");
+  64:	a8 95       	wdr
+	
+	MCUSR &= ~(1<<WDRF);
+  66:	84 b7       	in	r24, 0x34	; 52
+  68:	87 7f       	andi	r24, 0xF7	; 247
+  6a:	84 bf       	out	0x34, r24	; 52
+	// Start timed sequence
+	WDTCSR |= (1<<WDCE) | (1<<WDE);
+  6c:	80 91 60 00 	lds	r24, 0x0060	; 0x800060 <__EEPROM_REGION_LENGTH__+0x7f0060>
+  70:	88 61       	ori	r24, 0x18	; 24
+  72:	80 93 60 00 	sts	0x0060, r24	; 0x800060 <__EEPROM_REGION_LENGTH__+0x7f0060>
+	// Set new watchdog timeout value
+	WDTCSR = bb | (1<<WDIE);
+  76:	90 64       	ori	r25, 0x40	; 64
+  78:	90 93 60 00 	sts	0x0060, r25	; 0x800060 <__EEPROM_REGION_LENGTH__+0x7f0060>
+	
+	sei(); // Turn interrupts back on
+  7c:	78 94       	sei
+  7e:	08 95       	ret
+
+00000080 <turn_off_watchdog>:
+}
+
+// Turn off the Watchdog
+void turn_off_watchdog(void) {
+	cli(); // Turn interrupts off
+  80:	f8 94       	cli
+	asm("WDR");
+  82:	a8 95       	wdr
+	MCUSR &= ~(1<<WDRF);
+  84:	84 b7       	in	r24, 0x34	; 52
+  86:	87 7f       	andi	r24, 0xF7	; 247
+  88:	84 bf       	out	0x34, r24	; 52
+	WDTCSR |= (1<<WDCE) | (1<<WDIE);
+  8a:	e0 e6       	ldi	r30, 0x60	; 96
+  8c:	f0 e0       	ldi	r31, 0x00	; 0
+  8e:	80 81       	ld	r24, Z
+  90:	80 65       	ori	r24, 0x50	; 80
+  92:	80 83       	st	Z, r24
+	WDTCSR = 0;
+  94:	10 82       	st	Z, r1
+	sei(); // Turn interrupts back on
+  96:	78 94       	sei
+  98:	08 95       	ret
+
+0000009a <watchdog_sleep>:
+}
+
+// Watchdog sleep function - setup, sleep and turn off
+void watchdog_sleep(uint8_t timeout) { 
+	setup_watchdog(timeout);
+  9a:	db df       	rcall	.-74     	; 0x52 <setup_watchdog>
+	system_sleep();
+  9c:	ce df       	rcall	.-100    	; 0x3a <system_sleep>
+	turn_off_watchdog();
+  9e:	f0 cf       	rjmp	.-32     	; 0x80 <turn_off_watchdog>
+
+000000a0 <adc_read>:
+}
+
+// Read the ADC
+int adc_read(uint8_t pin, uint8_t reference) {
+  a0:	8f 70       	andi	r24, 0x0F	; 15
+	uint8_t low, high;
+	
+	// Set the analog reference (high two bits of ADMUX) and select the channel (low 4 bits)
+	if (reference == REF_1_1V) {
+  a2:	61 11       	cpse	r22, r1
+		ADMUX = (pin & 0x0F); // 1.1V reference
+	}
+	else {
+		ADMUX = (1<<REFS0) | (pin & 0x0F); // AVCC Ref
+  a4:	80 64       	ori	r24, 0x40	; 64
+  a6:	80 93 7c 00 	sts	0x007C, r24	; 0x80007c <__EEPROM_REGION_LENGTH__+0x7f007c>
+	}
+	
+	set_sleep_mode(SLEEP_MODE_ADC); // Set sleep mode ADC
+  aa:	83 b7       	in	r24, 0x33	; 51
+  ac:	89 7f       	andi	r24, 0xF9	; 249
+  ae:	82 60       	ori	r24, 0x02	; 2
+  b0:	83 bf       	out	0x33, r24	; 51
+	sleep_mode(); // System sleeps here
+  b2:	83 b7       	in	r24, 0x33	; 51
+  b4:	81 60       	ori	r24, 0x01	; 1
+  b6:	83 bf       	out	0x33, r24	; 51
+  b8:	88 95       	sleep
+  ba:	83 b7       	in	r24, 0x33	; 51
+  bc:	8e 7f       	andi	r24, 0xFE	; 254
+  be:	83 bf       	out	0x33, r24	; 51
+	
+	// Read ADCL first
+	low = ADCL;
+  c0:	80 91 78 00 	lds	r24, 0x0078	; 0x800078 <__EEPROM_REGION_LENGTH__+0x7f0078>
+	high = ADCH;
+  c4:	20 91 79 00 	lds	r18, 0x0079	; 0x800079 <__EEPROM_REGION_LENGTH__+0x7f0079>
+	
+	// combine the two bytes
+	return (high << 8) | low;
+  c8:	90 e0       	ldi	r25, 0x00	; 0
+}
+  ca:	92 2b       	or	r25, r18
+  cc:	08 95       	ret
+
+000000ce <setup>:
+// Setup
+void setup(void) {
+	// Turn on pull ups
+	PORTB |= (1<<PB2) | (1<<PB3) | (1<<PB4) | (1<<PB5) | (1<<PB6); 
+  ce:	85 b1       	in	r24, 0x05	; 5
+  d0:	8c 67       	ori	r24, 0x7C	; 124
+  d2:	85 b9       	out	0x05, r24	; 5
+	PORTC |= (1<<PC0) | (1<<PC1) | (1<<PC2) | (1<<PC4) | (1<<PC5) | (1<<PC6) | (1<<PC7); 
+  d4:	88 b1       	in	r24, 0x08	; 8
+  d6:	87 6f       	ori	r24, 0xF7	; 247
+  d8:	88 b9       	out	0x08, r24	; 8
+	
+	// Setup outputs
+	DDRD |= (1<<LED1) | (1<<LED2) | (1<<LED3) | (1<<LED4) | (1<<LED6) | (1<<LED7) | (1<<LED8);
+  da:	8a b1       	in	r24, 0x0a	; 10
+  dc:	8f 6e       	ori	r24, 0xEF	; 239
+  de:	8a b9       	out	0x0a, r24	; 10
+	DDRB |= (1<<LED5)  | (1<<LED9) | (1<<LED10);
+  e0:	84 b1       	in	r24, 0x04	; 4
+  e2:	83 68       	ori	r24, 0x83	; 131
+  e4:	84 b9       	out	0x04, r24	; 4
+	
+	// Set ADC prescale factor to 8
+	// 1 MHz / 8 = 125 KHz, inside the desired 50-200 KHz range.
+	sbi(ADCSRA, ADPS1);
+  e6:	ea e7       	ldi	r30, 0x7A	; 122
+  e8:	f0 e0       	ldi	r31, 0x00	; 0
+  ea:	80 81       	ld	r24, Z
+  ec:	82 60       	ori	r24, 0x02	; 2
+  ee:	80 83       	st	Z, r24
+	sbi(ADCSRA, ADPS0);
+  f0:	80 81       	ld	r24, Z
+  f2:	81 60       	ori	r24, 0x01	; 1
+  f4:	80 83       	st	Z, r24
+	
+	// Enable ADC/interrupt
+	sbi(ADCSRA, ADEN);
+  f6:	80 81       	ld	r24, Z
+  f8:	80 68       	ori	r24, 0x80	; 128
+  fa:	80 83       	st	Z, r24
+	sbi(ADCSRA, ADIE);
+  fc:	80 81       	ld	r24, Z
+  fe:	88 60       	ori	r24, 0x08	; 8
+ 100:	80 83       	st	Z, r24
+	//PORTB |= (1<<LED5) | (1<<LED9) | (1<<LED10);
+	//_delay_ms(200);
+	//PORTD &= ~((1<<LED1) | (1<<LED2) | (1<<LED3) | (1<<LED4) | (1<<LED6) | (1<<LED7) | (1<<LED8));
+	//PORTB &= ~((1<<LED5) | (1<<LED9) | (1<<LED10));
+	
+	sei(); // Turn on interrupts
+ 102:	78 94       	sei
+ 104:	08 95       	ret
+
+00000106 <__vector_16>:
+	}
+	
+	return 0;
+}
+
+EMPTY_INTERRUPT(ADC_vect);
+ 106:	18 95       	reti
+
+00000108 <__vector_7>:
+EMPTY_INTERRUPT(WDT_vect);
+ 108:	18 95       	reti
+
+0000010a <main>:
+#include <util/delay.h>
+#include <avr/sleep.h>
+#include "setup.c"
+
+int main (void) {
+	setup();
+ 10a:	e1 df       	rcall	.-62     	; 0xce <setup>
+	
+	while(1) {
+		
+		uint16_t vuResult = adc_read(ADCPin, REF_1_1V);
+ 10c:	60 e0       	ldi	r22, 0x00	; 0
+ 10e:	83 e0       	ldi	r24, 0x03	; 3
+ 110:	c7 df       	rcall	.-114    	; 0xa0 <adc_read>
+		
+		uint16_t startCompare = 560; // Play around with this to suit your needs
+		
+		
+		// Red
+		if (vuResult >= startCompare) {
+ 112:	80 33       	cpi	r24, 0x30	; 48
+ 114:	22 e0       	ldi	r18, 0x02	; 2
+ 116:	92 07       	cpc	r25, r18
+ 118:	30 f0       	brcs	.+12     	; 0x126 <main+0x1c>
+			PORTD |= (1<<LED1);
+ 11a:	58 9a       	sbi	0x0b, 0	; 11
+		}
+		else {
+			PORTD &= ~(1<<LED1);
+		}
+		if (vuResult >= startCompare + 20) {
+ 11c:	84 34       	cpi	r24, 0x44	; 68
+ 11e:	22 e0       	ldi	r18, 0x02	; 2
+ 120:	92 07       	cpc	r25, r18
+ 122:	18 f4       	brcc	.+6      	; 0x12a <main+0x20>
+ 124:	08 c0       	rjmp	.+16     	; 0x136 <main+0x2c>
+		// Red
+		if (vuResult >= startCompare) {
+			PORTD |= (1<<LED1);
+		}
+		else {
+			PORTD &= ~(1<<LED1);
+ 126:	58 98       	cbi	0x0b, 0	; 11
+ 128:	06 c0       	rjmp	.+12     	; 0x136 <main+0x2c>
+		}
+		if (vuResult >= startCompare + 20) {
+			PORTD |= (1<<LED2);
+ 12a:	59 9a       	sbi	0x0b, 1	; 11
+		}
+		else {
+			PORTD &= ~(1<<LED2);
+		}
+		if (vuResult >= startCompare + 30) {
+ 12c:	8e 34       	cpi	r24, 0x4E	; 78
+ 12e:	22 e0       	ldi	r18, 0x02	; 2
+ 130:	92 07       	cpc	r25, r18
+ 132:	18 f4       	brcc	.+6      	; 0x13a <main+0x30>
+ 134:	08 c0       	rjmp	.+16     	; 0x146 <main+0x3c>
+		}
+		if (vuResult >= startCompare + 20) {
+			PORTD |= (1<<LED2);
+		}
+		else {
+			PORTD &= ~(1<<LED2);
+ 136:	59 98       	cbi	0x0b, 1	; 11
+ 138:	06 c0       	rjmp	.+12     	; 0x146 <main+0x3c>
+		}
+		if (vuResult >= startCompare + 30) {
+			PORTD |= (1<<LED3);
+ 13a:	5a 9a       	sbi	0x0b, 2	; 11
+		else {
+			PORTD &= ~(1<<LED3);
+		}
+		
+		// Blue
+		if (vuResult >= startCompare + 40) {
+ 13c:	88 35       	cpi	r24, 0x58	; 88
+ 13e:	22 e0       	ldi	r18, 0x02	; 2
+ 140:	92 07       	cpc	r25, r18
+ 142:	18 f4       	brcc	.+6      	; 0x14a <main+0x40>
+ 144:	08 c0       	rjmp	.+16     	; 0x156 <main+0x4c>
+		}
+		if (vuResult >= startCompare + 30) {
+			PORTD |= (1<<LED3);
+		}
+		else {
+			PORTD &= ~(1<<LED3);
+ 146:	5a 98       	cbi	0x0b, 2	; 11
+ 148:	06 c0       	rjmp	.+12     	; 0x156 <main+0x4c>
+		}
+		
+		// Blue
+		if (vuResult >= startCompare + 40) {
+			PORTD |= (1<<LED4);
+ 14a:	5b 9a       	sbi	0x0b, 3	; 11
+		}
+		else {
+			PORTD &= ~(1<<LED4);
+		}
+		if (vuResult >= startCompare + 50) {
+ 14c:	82 36       	cpi	r24, 0x62	; 98
+ 14e:	22 e0       	ldi	r18, 0x02	; 2
+ 150:	92 07       	cpc	r25, r18
+ 152:	18 f4       	brcc	.+6      	; 0x15a <main+0x50>
+ 154:	08 c0       	rjmp	.+16     	; 0x166 <main+0x5c>
+		// Blue
+		if (vuResult >= startCompare + 40) {
+			PORTD |= (1<<LED4);
+		}
+		else {
+			PORTD &= ~(1<<LED4);
+ 156:	5b 98       	cbi	0x0b, 3	; 11
+ 158:	06 c0       	rjmp	.+12     	; 0x166 <main+0x5c>
+		}
+		if (vuResult >= startCompare + 50) {
+			PORTB |= (1<<LED5);
+ 15a:	2f 9a       	sbi	0x05, 7	; 5
+		}
+		else {
+			PORTB &= ~(1<<LED5);
+		}
+		if (vuResult >= startCompare + 60) {
+ 15c:	8c 36       	cpi	r24, 0x6C	; 108
+ 15e:	22 e0       	ldi	r18, 0x02	; 2
+ 160:	92 07       	cpc	r25, r18
+ 162:	18 f4       	brcc	.+6      	; 0x16a <main+0x60>
+ 164:	08 c0       	rjmp	.+16     	; 0x176 <main+0x6c>
+		}
+		if (vuResult >= startCompare + 50) {
+			PORTB |= (1<<LED5);
+		}
+		else {
+			PORTB &= ~(1<<LED5);
+ 166:	2f 98       	cbi	0x05, 7	; 5
+ 168:	06 c0       	rjmp	.+12     	; 0x176 <main+0x6c>
+		}
+		if (vuResult >= startCompare + 60) {
+			PORTD |= (1<<LED6);
+ 16a:	5d 9a       	sbi	0x0b, 5	; 11
+		}
+		else {
+			PORTD &= ~(1<<LED6);
+		}
+		if (vuResult >= startCompare + 70) {
+ 16c:	86 37       	cpi	r24, 0x76	; 118
+ 16e:	22 e0       	ldi	r18, 0x02	; 2
+ 170:	92 07       	cpc	r25, r18
+ 172:	18 f4       	brcc	.+6      	; 0x17a <main+0x70>
+ 174:	08 c0       	rjmp	.+16     	; 0x186 <main+0x7c>
+		}
+		if (vuResult >= startCompare + 60) {
+			PORTD |= (1<<LED6);
+		}
+		else {
+			PORTD &= ~(1<<LED6);
+ 176:	5d 98       	cbi	0x0b, 5	; 11
+ 178:	06 c0       	rjmp	.+12     	; 0x186 <main+0x7c>
+		}
+		if (vuResult >= startCompare + 70) {
+			PORTD |= (1<<LED7);
+ 17a:	5e 9a       	sbi	0x0b, 6	; 11
+		else {
+			PORTD &= ~(1<<LED7);
+		}
+		
+		// Green
+		if (vuResult >= startCompare + 80) {
+ 17c:	80 38       	cpi	r24, 0x80	; 128
+ 17e:	22 e0       	ldi	r18, 0x02	; 2
+ 180:	92 07       	cpc	r25, r18
+ 182:	18 f4       	brcc	.+6      	; 0x18a <main+0x80>
+ 184:	08 c0       	rjmp	.+16     	; 0x196 <main+0x8c>
+		}
+		if (vuResult >= startCompare + 70) {
+			PORTD |= (1<<LED7);
+		}
+		else {
+			PORTD &= ~(1<<LED7);
+ 186:	5e 98       	cbi	0x0b, 6	; 11
+ 188:	06 c0       	rjmp	.+12     	; 0x196 <main+0x8c>
+		}
+		
+		// Green
+		if (vuResult >= startCompare + 80) {
+			PORTD |= (1<<LED8);
+ 18a:	5f 9a       	sbi	0x0b, 7	; 11
+		}
+		else {
+			PORTD &= ~(1<<LED8);
+		}
+		if (vuResult >= startCompare + 90) {
+ 18c:	8a 38       	cpi	r24, 0x8A	; 138
+ 18e:	22 e0       	ldi	r18, 0x02	; 2
+ 190:	92 07       	cpc	r25, r18
+ 192:	18 f4       	brcc	.+6      	; 0x19a <main+0x90>
+ 194:	08 c0       	rjmp	.+16     	; 0x1a6 <main+0x9c>
+		// Green
+		if (vuResult >= startCompare + 80) {
+			PORTD |= (1<<LED8);
+		}
+		else {
+			PORTD &= ~(1<<LED8);
+ 196:	5f 98       	cbi	0x0b, 7	; 11
+ 198:	06 c0       	rjmp	.+12     	; 0x1a6 <main+0x9c>
+		}
+		if (vuResult >= startCompare + 90) {
+			PORTB |= (1<<LED9);
+ 19a:	28 9a       	sbi	0x05, 0	; 5
+		}
+		else {
+			PORTB &= ~(1<<LED9);
+		}
+		if (vuResult >= startCompare + 100) {
+ 19c:	84 39       	cpi	r24, 0x94	; 148
+ 19e:	92 40       	sbci	r25, 0x02	; 2
+ 1a0:	18 f0       	brcs	.+6      	; 0x1a8 <main+0x9e>
+			PORTB |= (1<<LED10);
+ 1a2:	29 9a       	sbi	0x05, 1	; 5
+ 1a4:	b3 cf       	rjmp	.-154    	; 0x10c <main+0x2>
+		}
+		if (vuResult >= startCompare + 90) {
+			PORTB |= (1<<LED9);
+		}
+		else {
+			PORTB &= ~(1<<LED9);
+ 1a6:	28 98       	cbi	0x05, 0	; 5
+		}
+		if (vuResult >= startCompare + 100) {
+			PORTB |= (1<<LED10);
+		}
+		else {
+			PORTB &= ~(1<<LED10);
+ 1a8:	29 98       	cbi	0x05, 1	; 5
+ 1aa:	b0 cf       	rjmp	.-160    	; 0x10c <main+0x2>
+
+000001ac <_exit>:
+ 1ac:	f8 94       	cli
+
+000001ae <__stop_program>:
+ 1ae:	ff cf       	rjmp	.-2      	; 0x1ae <__stop_program>
